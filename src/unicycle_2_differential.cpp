@@ -4,7 +4,6 @@
 #include <memory>
 #include <string>
 #include "rclcpp/rclcpp.hpp"
-#include "std_msgs/msg/string.hpp"
 #include "geometry_msgs/msg/vector3.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
 
