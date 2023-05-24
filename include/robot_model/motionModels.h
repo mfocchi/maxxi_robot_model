@@ -13,6 +13,7 @@ typedef std::shared_ptr<MotionModel> MotionModelPtr;
 typedef std::shared_ptr<UnicycleModel> UnicycleModelPtr;
 typedef std::shared_ptr<DroneModel> DroneModelPtr;
 
+enum Integration {euler, trapezoid};
 // *************************************************************************************************
 // CLASS: MOTION MODEL
 // *************************************************************************************************
@@ -34,8 +35,9 @@ public:
     virtual void compute_fu(const VectorX_t& x, const VectorX_t& uk, VectorX_t* fu) const = 0;
     virtual void computeJacobian_Fx(const VectorX_t& x, MatrixX_t* Fx) const = 0;
     virtual void computeJacobian_Fu(const VectorX_t& x, MatrixX_t* Fu) const = 0;
-    void integrate(const VectorX_t& x, int nx, VectorX_t* x_next);
-
+    void integrate(const VectorX_t& x, int nx, VectorX_t* x_next, Integration type);
+    void integrateEuler(const VectorX_t& x, int nx, VectorX_t* x_next);
+    void integrateTrapezoid(const VectorX_t& x, int nx, VectorX_t* x_next); 
     //getters
     void   getControlInput(VectorX_t *u_out) const {*u_out = u;}
     void   getQ(MatrixX_t* Q_out){*Q_out = Q;}

@@ -32,14 +32,14 @@ install(DIRECTORY
 add_library(motionModels include/${PROJECT_NAME}/motionModels.cpp)
 add_library(generalPurpose  include/${PROJECT_NAME}/generalPurpose.cpp)
 
-add_executable(uni2diff src/unicycle_2_differential.cpp)
+add_executable(unicycle_2_differential src/unicycle_2_differential.cpp)
 add_executable(unicycle_sim_node src/unicycle_sim_node.cpp)
 
 target_link_libraries(motionModels generalPurpose)
-target_link_libraries(uni2diff motionModels)
+target_link_libraries(unicycle_2_differential motionModels)
 target_link_libraries(unicycle_sim_node motionModels)
 
-target_include_directories(uni2diff PUBLIC
+target_include_directories(unicycle_2_differential PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
 
@@ -47,7 +47,7 @@ target_include_directories(unicycle_sim_node PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
 
-ament_target_dependencies(uni2diff
+ament_target_dependencies(unicycle_2_differential
   Eigen3
   rclcpp 
   geometry_msgs 
@@ -64,7 +64,7 @@ ament_target_dependencies(unicycle_sim_node
   tf2_ros)
 
 install(TARGETS 
-  uni2diff
+  unicycle_2_differential
   DESTINATION lib/${PROJECT_NAME}
   )
 

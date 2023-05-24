@@ -31,7 +31,7 @@ private:
         geometry_msgs::msg::Quaternion q_msg;
         tf2::Quaternion q;
 
-        RobotModel->integrate(pose, 3, &pose); // update robot's position
+        RobotModel->integrate(pose, 3, &pose, euler); // update robot's position
         // conversion from Yaw-Pitch-Roll to quaternions
         q.setRPY(0, 0,  pose(2));
         q.normalize();
@@ -64,7 +64,7 @@ public:
 		declare_parameter("pub_dt_ms", 50);
 		int dt = this->get_parameter("pub_dt_ms").as_int();
         pose = pose_init;   
-		pub = this->create_publisher<geometry_msgs::msg::TransformStamped>("/UniBot/pose", 10);
+		pub = this->create_publisher<geometry_msgs::msg::TransformStamped>("/SimTrackedRobot/pose", 10);
 		sub = this->create_subscription<geometry_msgs::msg::TwistStamped>(
 			"/vel_cmd", 
 			10, 

@@ -10,7 +10,22 @@ MotionModel::MotionModel(const MatrixX_t& Q, int size, data_t dt)
     this->dt = dt;
 }
 
-void MotionModel::integrate(const VectorX_t& x, int nx, VectorX_t* x_next) 
+void MotionModel::integrate(const VectorX_t& x, int nx, VectorX_t* x_next, Integration type) 
+{
+    switch (type)
+    {
+    case euler:
+        integrateEuler(x, nx, x_next);
+        break;
+    case trapezoid:
+        integrateTrapezoid(x, nx, x_next);
+        break;
+    default:
+        break;
+    }
+}
+
+void MotionModel::integrateTrapezoid(const VectorX_t& x, int nx, VectorX_t* x_next) 
 {
     /*Integration via trapezoid rule*/
     VectorX_t fu_prev(nx);
@@ -21,10 +36,19 @@ void MotionModel::integrate(const VectorX_t& x, int nx, VectorX_t* x_next)
 
     x_dot << 0.5 * (fu_next + fu_prev);
     
-    x_next->segment(0,nx) << (x_next->segment(0,nx) + dt * x_dot).eval(); 
+    x_next->segment(0,nx) << (x.segment(0,nx) + dt * x_dot).eval(); 
     this->u_prev = this->u; // save most recent value for the control input
 }
 
+void MotionModel::integrateEuler(const VectorX_t& x, int nx, VectorX_t* x_next) 
+{
+    /*Integration via trapezoid rule*/
+    VectorX_t x_dot(nx);
+    compute_fu(x, this->u, &x_dot);
+    
+    x_next->segment(0,nx) << (x.segment(0,nx) + dt * x_dot).eval(); 
+    this->u_prev = this->u; // save most recent value for the control input
+}
 // UNICYCLE -------------------------------------------------
 /*
 f(x, u) =
@@ -113,7 +137,6 @@ void DroneModel::computeJacobian_Fx(const VectorX_t& x, MatrixX_t* Fx) const
 {
     assert(x.size() >= 10);
     assert(Fx->size() > 0);
-    data_t g  = GRAVITY;
     Vector3_t vecTmp;
     Matrix3_t RF(3,3);
     Matrix3_t SomegaE;
@@ -164,11 +187,6 @@ void DroneModel::computeJacobian_Fu(const VectorX_t& x, MatrixX_t* Fu) const
     data_t qy = x(8);
     data_t qz = x(9);
     data_t dts = pow(dt,2);
-
-    data_t qxs = qx*qx;
-    data_t qys = qy*qy;
-    data_t qzs = qz*qz;
-    data_t qws = qw*qw;
 
     computeRF(x.segment(6,4), &RF);
     computeSkewSymmetric(-x.segment(3,3), &SomegaDotVel);
