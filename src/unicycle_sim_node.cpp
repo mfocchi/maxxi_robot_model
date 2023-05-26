@@ -58,13 +58,22 @@ private:
     }
 
 public:
-    Unicycle_robot(Vector3_t pose_init)
+    Unicycle_robot()
     : Node("unicycle_robot"), count_(0)
     {
 		declare_parameter("pub_dt_ms", 50);
+        declare_parameter("x0_m", 0.0);
+        declare_parameter("y0_m", 0.0);
+        declare_parameter("theta0_rad", 0.0);
 		int dt = this->get_parameter("pub_dt_ms").as_int();
-        pose = pose_init;   
-		pub = this->create_publisher<geometry_msgs::msg::TransformStamped>("/SimTrackedRobot/pose", 10);
+		data_t x0     = this->get_parameter("x0_m").as_double();
+		data_t y0     = this->get_parameter("y0_m").as_double();
+		data_t theta0 = this->get_parameter("theta0_rad").as_double();
+        Vector3_t pose0;
+        pose0 << x0, y0, theta0;
+        pose = pose0;   
+		
+        pub = this->create_publisher<geometry_msgs::msg::TransformStamped>("/tractor/ground_truth/pose", 10);
 		sub = this->create_subscription<geometry_msgs::msg::TwistStamped>(
 			"/vel_cmd", 
 			10, 
@@ -82,10 +91,8 @@ public:
 
 int main(int argc, char ** argv)
 {
-    Vector3_t starting_pose;
-    starting_pose << 0,0,0;
 	rclcpp::init(argc, argv);
-	std::shared_ptr<Unicycle_robot> Sim(new Unicycle_robot(starting_pose));
+	std::shared_ptr<Unicycle_robot> Sim(new Unicycle_robot());
 
 	rclcpp::spin(Sim);
 

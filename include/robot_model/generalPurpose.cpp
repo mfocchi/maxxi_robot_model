@@ -116,3 +116,17 @@ data_t sinc(data_t val)
     else
         return sin(val) / val;
 }
+
+/*
+wrap the angle within -pi and pi*/
+data_t angleWithinPI(data_t angle)
+{
+    data_t angle_out = std::fmod(angle, 2.0 * M_PI);  // Wrap angle to range -2π to 2π
+
+    if (angle_out <= -M_PI) {
+        angle_out += 2.0 * M_PI;  // Adjust angle if it's less than -π
+    } else if (angle_out > M_PI) {
+        angle_out -= 2.0 * M_PI;  // Adjust angle if it's greater than π
+    }
+    return angle_out;
+}

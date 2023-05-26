@@ -7,6 +7,7 @@
 #include <string>
 #include <iostream>
 #include <memory>
+#include <cmath>
 #define GRAVITY 9.81
 #define POW2GRAVITY 96.24
 
@@ -27,4 +28,5 @@ void fillVector(VectorX_t* V, std::vector<data_t> vec);
 void repeatMatrixDiagonal(const MatrixX_t& M, MatrixX_t* Mout);
 int  whereIsStringInVector(const std::string& name, const std::vector<std::string>& vec);
 data_t sinc(data_t val);
+data_t angleWithinPI(data_t angle);
 #endif
