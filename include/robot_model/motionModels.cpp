@@ -1,13 +1,15 @@
 #include "motionModels.h"
 
-MotionModel::MotionModel(const MatrixX_t& Q, int size, data_t dt)
+MotionModel::MotionModel(const MatrixX_t& Q, int size, const VectorX_t& uInit, const std::map<std::string, data_t>& params)
 {
     assert(size > 0);
     assert(Q.rows() == Q.cols() && Q.rows() == size);
     assert(dt > 0.0);
     this->Q = Q;
     this->size = size;
-    this->dt = dt;
+    this->dt = params.at("dt");
+    this->u_prev = uInit;
+    this->u = uInit;
 }
 
 void MotionModel::integrate(const VectorX_t& x, int nx, VectorX_t* x_next, Integration type) 
@@ -56,8 +58,8 @@ x = x + v*cos(theta)*dt
 y = y + v*sin(theta)*dt
 theta = w*dt
 */
-UnicycleModel::UnicycleModel(const MatrixX_t& Q, data_t dt, const VectorX_t& uInit)
-: MotionModel(Q, 2, dt) {u = uInit; u_prev = uInit;}
+UnicycleModel::UnicycleModel(const MatrixX_t& Q, const VectorX_t& uInit, const std::map<std::string, data_t>& params)
+: MotionModel(Q, 2, uInit, params) {}
 
 
 
@@ -96,12 +98,8 @@ void UnicycleModel::computeJacobian_Fu(const VectorX_t& x, MatrixX_t* Fu) const
 
 // DRONE ----------------------------------------------------
 
-DroneModel::DroneModel(const MatrixX_t& Q, data_t dt, const VectorX_t& uInit)
-    : MotionModel(Q, 6, dt) 
-{
-    this->u_prev = uInit;
-    this->u = uInit;
-}
+DroneModel::DroneModel(const MatrixX_t& Q, const VectorX_t& uInit, const std::map<std::string, data_t>& params)
+    : MotionModel(Q, 6, uInit, params) {}
 
 void DroneModel::compute_fu(const VectorX_t& x, const VectorX_t& uk, VectorX_t* fu) const
 {
@@ -242,3 +240,39 @@ void DroneModel::computeSomegaEuler(Matrix3_t* Somega) const
     computeSkewSymmetric(u.segment(3,3), Somega);
 }
 
+//*******************************************************************
+// KinematicTrackedVehicleModel
+//*******************************************************************
+
+/*
+Consider the slips as control inputs, even though their value should be estimated
+x = [x,y,theta]^w*/
+
+KinematicTrackedVehicleModel::KinematicTrackedVehicleModel(const MatrixX_t& Q, const VectorX_t& uInit, const std::map<std::string, data_t>& params)
+    : MotionModel(Q, 4, uInit, params) 
+{
+    this->r          = params.at("sproket_radius");
+    this->B = params.at("distance_between_tracks");
+}
+
+void KinematicTrackedVehicleModel::compute_fu(const VectorX_t& x, const VectorX_t& u, VectorX_t* fu) const 
+{
+    data_t i_l = u(2);
+    data_t i_r = u(3);
+    data_t omega_l = u(0);
+    data_t omega_r = u(1);
+    data_t theta = x(2);
+    data_t v = 0.5 * r * (omega_l*(1 - i_l) + omega_r*(1 - i_r));
+    data_t omega = r * (omega_l*(1 - i_l) - omega_r*(1 - i_r)) / B;
+    (*fu) << v*cos(theta), v*sin(theta), omega;
+}
+
+void KinematicTrackedVehicleModel::computeJacobian_Fx(const VectorX_t& x, MatrixX_t* Fx) const 
+{
+
+}
+
+void KinematicTrackedVehicleModel::computeJacobian_Fu(const VectorX_t& x, MatrixX_t* Fu) const 
+{
+
+}
