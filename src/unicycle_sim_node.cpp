@@ -15,7 +15,7 @@ typedef double data_t;
 
 #define MILLISECONDS 1000.0
 
-class Unicycle_robot : public rclcpp::Node
+class UnicycleRobot : public rclcpp::Node
 {
 private:
     UnicycleModelPtr RobotModel;      // model of the robot for the trajectory generation
@@ -58,8 +58,8 @@ private:
     }
 
 public:
-    Unicycle_robot()
-    : Node("unicycle_robot"), count_(0)
+    UnicycleRobot()
+    : Node("UnicycleRobot"), count_(0)
     {
 		declare_parameter("pub_dt_ms", 50);
         declare_parameter("x0_m", 0.0);
@@ -77,22 +77,23 @@ public:
 		sub = this->create_subscription<geometry_msgs::msg::TwistStamped>(
 			"/vel_cmd", 
 			10, 
-			std::bind(&Unicycle_robot::vel_cmd_callback, this, std::placeholders::_1));
+			std::bind(&UnicycleRobot::vel_cmd_callback, this, std::placeholders::_1));
         timer_ = this->create_wall_timer(
 			std::chrono::milliseconds(dt), 
-			std::bind(&Unicycle_robot::timer_callback, this));
+			std::bind(&UnicycleRobot::timer_callback, this));
         MatrixX_t Q(2,2);       // covariance on the control input
         VectorX_t u_init(2);    // init control input
         Q.setZero();
         u_init.setZero();
-        RobotModel = std::make_shared<UnicycleModel>(Q, data_t(dt) / MILLISECONDS, u_init);
+        std::map<std::string, data_t> params{{"dt", data_t(dt)}};
+        RobotModel = std::make_shared<UnicycleModel>(Q, u_init, params);
     }
 };
 
 int main(int argc, char ** argv)
 {
 	rclcpp::init(argc, argv);
-	std::shared_ptr<Unicycle_robot> Sim(new Unicycle_robot());
+	std::shared_ptr<UnicycleRobot> Sim(new UnicycleRobot());
 
 	rclcpp::spin(Sim);
 

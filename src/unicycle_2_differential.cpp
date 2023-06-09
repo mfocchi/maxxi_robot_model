@@ -4,7 +4,7 @@
 #include <memory>
 #include <string>
 #include "rclcpp/rclcpp.hpp"
-#include "geometry_msgs/msg/vector3.hpp"
+#include "sensor_msgs/msg/joint_state.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
 
 
@@ -22,7 +22,7 @@ public:
 		d = this->get_parameter("wheels_distance_m").as_double();
 		r = this->get_parameter("wheel_radius_m").as_double();
 
-		pub = this->create_publisher<geometry_msgs::msg::Vector3>("/wheels_vel_cmd", 10);
+		pub = this->create_publisher<sensor_msgs::msg::JointState>("/command", 10);
 		sub = this->create_subscription<geometry_msgs::msg::TwistStamped>(
 			"/vel_cmd", 
 			10, 
@@ -39,14 +39,16 @@ private:
 		data_t wheel_vel_left  = v - omega * d * 0.5;
 		data_t wheel_vel_right = v + omega * d * 0.5;
 		
-		geometry_msgs::msg::Vector3 msg_wheels_rotational_speed;
-		msg_wheels_rotational_speed.x = wheel_vel_left  / r;
-		msg_wheels_rotational_speed.y = wheel_vel_right / r;
+		sensor_msgs::msg::JointState msg_sprocket_speed;
+		
+		std::vector<data_t> sprockets_speed = {wheel_vel_left  / r, wheel_vel_right / r};
+		msg_sprocket_speed.name = {"left_sprocket", "right_sprocket"};
+		msg_sprocket_speed.velocity = sprockets_speed;
 
-		pub->publish(msg_wheels_rotational_speed);
+		pub->publish(msg_sprocket_speed);
     }
 
-    rclcpp::Publisher<geometry_msgs::msg::Vector3>::SharedPtr pub;
+    rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr pub;
 	rclcpp::Subscription<geometry_msgs::msg::TwistStamped>::SharedPtr sub;
     size_t count_;
 	data_t r;

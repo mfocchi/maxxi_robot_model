@@ -90,6 +90,6 @@ public:
     void compute_fu(const VectorX_t& x, const VectorX_t& u, VectorX_t* fu) const override;
     void computeJacobian_Fx(const VectorX_t& x, MatrixX_t* Fx) const override;
     void computeJacobian_Fu(const VectorX_t& x, MatrixX_t* Fu) const override;
-}
+};
 
 #endif
